@@ -210,9 +210,7 @@ class AuthController extends Controller
             $referrals = User::where('affiliate_id', $parent->user->id)->where('id', '!=', $parent->user->id)->paginate(Setting::get('items_page', 10));
             $gamer = Gamer::where('user_id', $parent->user->id)->first();
             $room = $gamer['room'];
-            $affiliate_id = $this->giveAffilite($parent1);
-            var_dump($affiliate_id);die;
-
+            $affiliate_id = $this->giveAffilite(array($parent1));
 
         } else {
 //            $parent1 = DB::table('users')->join('timelines', 'timelines.id','=','users.timeline_id')->where('users.id', 0)->first();
@@ -288,16 +286,25 @@ class AuthController extends Controller
         }
     }
 
-    public function giveAffilite($user){
-        $childs =  DB::table('users')->join('timelines', 'timelines.id','=','users.timeline_id')->where('affiliate_id', $user->id)->get();
-        if(count($childs)<3){
-            var_dump($user->id);die;
-            return $user->id;die;
-        }else{
-            foreach ($childs as $child){
-                $this->giveAffilite($child);
+    public function giveAffilite($users){
+        $bool = false;
+        foreach ($users as $user){
+
+            $childs =  DB::table('users')->join('timelines', 'timelines.id','=','users.timeline_id')->where('affiliate_id', $user->id)->get();
+            if(count($childs)<3){
+                $bool = true;
+                return $user->id;
+            }else{
+                foreach ($childs as $child){
+                    $child_users[] = $child;
+                }
+
+
             }
 
+        }
+        if(!$bool){
+            return $this->giveAffilite($child_users);
         }
 
     }
